@@ -1,0 +1,8 @@
+.zoomLoginAnimation {
+    animation: mymove 5s;
+  }
+  
+  @keyframes mymove {
+    0%   {width: 0%; height: 0%}
+    100% {width: 100%; height: 100%}
+  }
