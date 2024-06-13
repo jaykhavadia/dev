@@ -13,6 +13,9 @@ const addressRoutes = require("./routes/address.js");
 const couponRoutes = require("./routes/coupon.js");
 // Create an Express application
 const app = express();
+const buildPath = path.join(__dirname, "..", "spa", "build");
+
+app.use(express.static(buildPath));
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
@@ -40,6 +43,11 @@ app.use("/coupon", couponRoutes);
 
 app.get("/test", (req, res) => {
   res.send("Everything is Healthy...!");
+});
+
+app.get("*", (req, res) => {
+  console.log("Route :->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> ", req.url);
+  res.sendFile(path.join(buildPath, "index.html"));
 });
 // Start the server on port 3000
 const PORT = process.env.PORT || 4000;
