@@ -59,13 +59,12 @@ const Navbar = () => {
             Projects
           </a> */}
             <div className='nav-item dropdown'>
-              <a
-                href='#'
+              <div
                 className='nav-link dropdown-toggle'
                 data-bs-toggle='dropdown'
               >
                 Services
-              </a>
+              </div>
               <div className='dropdown-menu bg-light m-0'>
                 <a
                   href={token ? "/garden/registration" : "/login"}
@@ -81,6 +80,25 @@ const Navbar = () => {
                 </a>
               </div>
             </div>
+            <div className='nav-item dropdown'>
+              <div
+                className='nav-link dropdown-toggle'
+                data-bs-toggle='dropdown'
+              >
+                Products
+              </div>
+              <div className='dropdown-menu bg-light m-0'>
+                <a href={"/products"} className='dropdown-item'>
+                  View Products
+                </a>
+                {token && (
+                  <a href={"/products/checkout"} className='dropdown-item'>
+                    View Cart
+                  </a>
+                )}
+              </div>
+            </div>
+
             <a href='/contact' className='nav-item nav-link'>
               Contact
             </a>

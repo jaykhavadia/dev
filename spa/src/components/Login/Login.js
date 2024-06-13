@@ -12,15 +12,16 @@ function validateEmail(email) {
   return re.test(String(email).toLowerCase());
 }
 
-const Login = () => {
+const Login = (props) => {
   const [zoom, setZoom] = useState("scale-0");
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const { updateUserEmail, checkLogin } = useContext(AuthContext);
+  const { updateUserEmail, checkLogin, checkAdmin } = useContext(AuthContext);
 
   const handleEmailChange = (e) => {
     setEmailError();
@@ -65,11 +66,12 @@ const Login = () => {
         toast.success("Login Successfully!");
         resetFields();
         // checkLogin();
-        navigate('/garden/registration');
+        navigate("/garden/registration");
         return;
       }
       toast.error(result.message);
     } catch (error) {
+      toast.error(error.message || error.error || 'Something went wrong');
       // Handle errors
       console.error("Error while Login:", error);
     }
@@ -83,7 +85,12 @@ const Login = () => {
   };
 
   useEffect(() => {
-    checkLogin();
+    checkAdmin();
+    if (props.admin) {
+      setIsAdmin(true);
+      localStorage.setItem("isAdmin", true);
+    }
+    checkLogin("/login", props.admin);
     setTimeout(() => {
       setZoom("scale-100");
     }, 500); // Adjust the delay as needed
@@ -109,7 +116,7 @@ const Login = () => {
               alt='Your Company'
             ></img>
             <h2 className='mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900'>
-              Sign in to your account
+              Sign in to your {isAdmin ? "admin" : ""} account
             </h2>
           </div>
 
@@ -181,16 +188,18 @@ const Login = () => {
               </div>
             </div>
 
-            <p className='mt-10 text-center text-sm text-gray-500'>
-              Not a member?
-              <a
-                onClick={resetFields}
-                href='/sign-up'
-                className='ml-2 font-semibold leading-6 text-indigo-600 hover:text-indigo-500'
-              >
-                Sign up
-              </a>
-            </p>
+            {!isAdmin && (
+              <p className='mt-10 text-center text-sm text-gray-500'>
+                Not a member?
+                <a
+                  onClick={resetFields}
+                  href='/sign-up'
+                  className='ml-2 font-semibold leading-6 text-indigo-600 hover:text-indigo-500'
+                >
+                  Sign up
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </div>

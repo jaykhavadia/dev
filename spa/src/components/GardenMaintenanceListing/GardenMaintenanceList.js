@@ -11,7 +11,7 @@ import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 
 const GardenMaintenanceList = () => {
   const navigate = useNavigate();
-  const { checkLogin } = useContext(AuthContext);
+  const { checkAdmin } = useContext(AuthContext);
   const [maintenanceList, setMaintenanceList] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedList, setSelectedList] = useState();
@@ -19,14 +19,19 @@ const GardenMaintenanceList = () => {
   const setGardenData = async () => {
     const response = await getGardenDetails();
     if (response === null) {
-      toast('Please Register a garden first', {
-        icon: <FontAwesomeIcon className="text-yellow-700" icon={faExclamationCircle} />,
+      toast("Please Register a garden first", {
+        icon: (
+          <FontAwesomeIcon
+            className='text-yellow-700'
+            icon={faExclamationCircle}
+          />
+        ),
       });
       navigate("/garden/registration");
       return;
     }
     if (response?.message === "Invalid token") {
-      toast.success(response?.message);
+      toast.error(response?.message);
       localStorage.clear();
       navigate("/login");
     }
@@ -34,14 +39,18 @@ const GardenMaintenanceList = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
+    const isAdmin = localStorage.getItem("isAdmin");
     if (!token) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
     async function getMaintenanceData() {
-      await setGardenData();
-      const maintenanceData = await getAllMaintenance();
-      setMaintenanceList(maintenanceData);
+      await checkAdmin();
+      if (!isAdmin) {
+        await setGardenData();
+        const maintenanceData = await getAllMaintenance();
+        setMaintenanceList(maintenanceData);
+      }
     }
     getMaintenanceData();
 
@@ -78,8 +87,8 @@ const GardenMaintenanceList = () => {
                   <div className='space-y-6'>
                     <div className='flex justify-end mr-5 '>
                       {maintenanceList?.length === 0 ||
-                      maintenanceList[maintenanceList.length - 1].status !==
-                        "pending" ? (
+                      (maintenanceList[maintenanceList.length - 1].status !==
+                        "pending" && maintenanceList[maintenanceList.length - 1].status !== 'Pending' )? (
                         <button
                           className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center'
                           onClick={() => navigate("/garden/maintenance")}
@@ -116,8 +125,10 @@ const GardenMaintenanceList = () => {
                               <td>
                                 <span
                                   className={`py-2 px-4 badge ${
-                                    maintenanceData.status === "completed"
+                                    maintenanceData.status === "Completed"
                                       ? "bg-success"
+                                      : maintenanceData.status === "Canalled"
+                                      ? "bg-red-500"
                                       : "bg-warning"
                                   }`}
                                 >
@@ -157,31 +168,31 @@ const GardenMaintenanceList = () => {
                 <div className='bg-white p-8 rounded-lg shadow-lg z-10'>
                   <h2 className='text-xl mb-4'>Maintenance Data</h2>
                   <div className='flex flex-col justify-start items-start'>
-                    <p>
+                    <span>
                       <strong>Maintenance Name:</strong>{" "}
                       {selectedList.maintenanceName}
-                    </p>
-                    <p>
+                    </span>
+                    <span>
                       <strong>Design Change:</strong>{" "}
                       {selectedList.designChange ? "Yes" : "No"}
-                    </p>
-                    <p>
+                    </span>
+                    <span>
                       <strong>Garden:</strong> {selectedList.garden}
-                    </p>
-                    <p>
+                    </span>
+                    <span>
                       <strong>Pot Change:</strong>{" "}
                       {selectedList.potChange ? "Yes" : "No"}
-                    </p>
-                    <p>
+                    </span>
+                    <span>
                       <strong>Status:</strong> {selectedList.status}
-                    </p>
-                    <p>
+                    </span>
+                    <span>
                       <strong>Water Supply:</strong>{" "}
                       {selectedList.waterSupply ? "Yes" : "No"}
-                    </p>
-                    <p>
+                    </span>
+                    <span>
                       <strong>Description:</strong> {selectedList.description}
-                    </p>
+                    </span>
                   </div>
 
                   <button

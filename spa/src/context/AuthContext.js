@@ -10,16 +10,33 @@ export const AuthContextProvider = ({ children }) => {
   const [userEmail, setUserEmail] = useState("");
   const navigate = useNavigate();
 
-  const checkLogin = (path) => {
+  const checkAdmin = async (path) => {
+    const token = localStorage.getItem("accessToken");
+    const isAdmin = localStorage.getItem("isAdmin");
+    if (token && isAdmin) {
+      // toast.success("You are a admin User");
+      navigate(path || "/admin/manage-maintenance");
+    }
+  };
+  
+  const checkLogin = (path, isAdmin) => {
     const verifyEmail = localStorage.getItem("verifyEmail");
     const token = localStorage.getItem("accessToken");
     if (!token && !verifyEmail) {
-      navigate(path || '/login');
+      if (isAdmin) {
+        navigate(path === "/login" ? "/admin/login" : path);
+        return;
+      }
+      navigate(path || "/login");
       return;
     }
     if (token) {
       updateUserToken(token);
-      navigate("/garden/registration");
+      if (isAdmin) {
+        navigate(path || "/admin/manage-maintenance");
+      } else {
+        navigate("/garden/registration");
+      }
       return;
     }
     if (verifyEmail) {
@@ -68,6 +85,7 @@ export const AuthContextProvider = ({ children }) => {
         updateUserEmail,
         getUserData,
         Logout,
+        checkAdmin
       }}
     >
       {children}

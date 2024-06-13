@@ -84,7 +84,7 @@ const Footer = () => {
             </div>
             <div className='col-lg-3 col-md-6'>
               <h4 className='text-white mb-4'>Newsletter</h4>
-              <p>Dolor amet sit justo amet elitr clita ipsum elitr est.</p>
+              <span>Dolor amet sit justo amet elitr clita ipsum elitr est.</span>
               <div className='position-relative w-100'>
                 <input
                   className='form-control bg-light border-light w-100 py-3 ps-4 pe-5'

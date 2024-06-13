@@ -20,10 +20,14 @@ import team3 from "../../assets/img/team-3.jpg";
 import testimonial1 from "../../assets/img/testimonial-1.jpg";
 import testimonial2 from "../../assets/img/testimonial-2.jpg";
 import ScrollAnimation from "react-animate-on-scroll";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import Footer from "../Footer/Footer";
+import { AuthContext } from "../../context/AuthContext";
 const Home = () => {
+  const { checkAdmin } = useContext(AuthContext);
+
   useEffect(() => {
+    checkAdmin();
     const handleScroll = () => {
       const element = document.getElementById("numberAnimation");
       const position = element.getBoundingClientRect();

@@ -29,6 +29,14 @@ import Contact from "./components/Contact/Contact";
 import GardenRegistration from "./components/GardenRegistration/GardenRegistration";
 import GardenMaintenance from "./components/GardenMaintenance/GardenMaintenance";
 import GardenMaintenanceList from "./components/GardenMaintenanceListing/GardenMaintenanceList";
+import ManageMaintenance from "./components/Admin/ManageMaintenance/ManageMaintenance";
+import Products from "./components/Products/Products";
+import Checkout from "./components/Checkout/Checkout";
+import ProductsList from "./components/Admin/ManageProducts/ProductsListing/ProductsList";
+import ProductDetail from "./components/ProductDetail/ProductDetail";
+import AddProducts from "./components/Admin/ManageProducts/AddProducts/AddProducts";
+import CouponListing from "./components/Admin/ManageCoupons/CouponListing/CouponListing";
+import AddCoupon from "./components/Admin/ManageCoupons/AddCoupon/AddCoupon";
 
 let token = localStorage.getItem("accessToken");
 axios.interceptors.request.use(
@@ -67,6 +75,7 @@ root.render(
           <Route path='projects' element={<Projects />} />
           <Route path='contact' element={<Contact />} />
           <Route path='login' element={<Login />} />
+          <Route path='admin/login' element={<Login admin={true} />} />
           <Route path='sign-up' element={<SignUp />} />
           {/* <Route path='dashboard' element={<Dashboard />} /> */}
           <Route path='email-verification' element={<EmailVerification />} />
@@ -76,6 +85,18 @@ root.render(
             element={<GardenMaintenanceList />}
           />
           <Route path='garden/maintenance' element={<GardenMaintenance />} />
+
+          <Route path='/admin/manage-maintenance' element={<ManageMaintenance />} />
+          <Route path='/admin/manage-products' element={<ProductsList />} />
+          <Route path='/admin/add-products' element={<AddProducts />} />
+          <Route path='/admin/edit-product/:id' element={<AddProducts />} />
+          <Route path='/admin/manage-coupons' element={<CouponListing />} />
+          <Route path='/admin/add-coupon' element={<AddCoupon />} />
+          <Route path='/admin/edit-coupon/:id' element={<AddCoupon />} />
+
+          <Route path='/products' element={<Products />} />
+          <Route path='/products/:id' element={<ProductDetail />} />
+          <Route path='/products/checkout' element={<Checkout />} />
         </Routes>
         <Toaster
           position='top-right'

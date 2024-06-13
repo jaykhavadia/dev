@@ -37,6 +37,7 @@ module.exports.createUser = async (req, res) => {
     }
 
     userData.isVerified = false;
+    userData.isAdmin = false;
 
     const fetchUser = await User.find({ email: userData.email });
     if (fetchUser) {
@@ -97,7 +98,7 @@ module.exports.loginUser = async (req, res) => {
   const isMatch = await bcrypt.compare(password, fetchUser[0].password);
   if (!fetchUser.length || !isMatch) {
     return res
-      .status(404)
+      .status(400)
       .json({ message: "Email and Password are Incorrect" });
   }
   if (!fetchUser[0].isVerified) {
@@ -193,8 +194,13 @@ module.exports.me = async (req, res) => {
 
 module.exports.contactUs = async (req, res) => {
   try {
-    if(!req.body.name || !req.body.email || !req.body.message || !req.body.phone){
-      return res.status(404).json({message:"Required Payload not found"});
+    if (
+      !req.body.name ||
+      !req.body.email ||
+      !req.body.message ||
+      !req.body.phone
+    ) {
+      return res.status(404).json({ message: "Required Payload not found" });
     }
     const contactUs = new contactUsSchema(req.body);
     const saveContactUs = await contactUs.save();

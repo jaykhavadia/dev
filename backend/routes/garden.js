@@ -33,6 +33,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 route.post(
   "/register",
+  auth,
   upload.single("image"),
   gardenController.registerGarden
 );
@@ -45,4 +46,18 @@ route.patch(
 );
 route.post("/maintenance", auth, gardenController.addMaintainance);
 route.get("/maintenance", auth, gardenController.getMaintainance);
+
+// START Routes for Admin Only.
+route.get(
+  "/all-maintenance",
+  auth,
+  gardenController.getAllMaintainanceForAdmin
+);
+route.put(
+  "/update-maintenance/:id",
+  auth, 
+  gardenController.editMaintainanceForAdmin
+);
+// END Routes for Admin Only.
+
 module.exports = route;

@@ -110,10 +110,18 @@ module.exports.updateGarden = async (req, res) => {
   }
 };
 
-
 module.exports.addMaintainance = async (req, res) => {
   try {
-    const { userId, gardenId, maintenanceName, garden, potChange, waterSupply, designChange, description } = req.body;
+    const {
+      userId,
+      gardenId,
+      maintenanceName,
+      garden,
+      potChange,
+      waterSupply,
+      designChange,
+      description,
+    } = req.body;
     const newMaintainance = new maintainanceSchema({
       userId,
       gardenId,
@@ -122,7 +130,7 @@ module.exports.addMaintainance = async (req, res) => {
       potChange,
       waterSupply,
       designChange,
-      description
+      description,
     });
     await newMaintainance.save();
     return res.status(200).json(newMaintainance);
@@ -130,14 +138,52 @@ module.exports.addMaintainance = async (req, res) => {
     console.log("addMaintainance error", error);
     return res.status(500).json(error);
   }
-}
+};
 
 module.exports.getMaintainance = async (req, res) => {
   try {
-    const getMaintainance = await maintainanceSchema.find({ userId: req.user._id });
+    const getMaintainance = await maintainanceSchema.find({
+      userId: req.user._id,
+    });
     return res.status(200).json(getMaintainance);
   } catch (error) {
     console.log("getMaintainance error", error);
     return res.status(500).json(error);
   }
-}
+};
+
+module.exports.getAllMaintainanceForAdmin = async (req, res) => {
+  try {
+    if (!req.user.isAdmin)
+      return res
+        .status(403)
+        .json({ message: "You don't have permission to access this route!" });
+    const getMaintainance = await maintainanceSchema.find({}).populate({
+      path: "gardenId",
+      select: ""
+    });
+    return res.status(200).json(getMaintainance);
+  } catch (error) {
+    console.log("getMaintainance error", error);
+    return res.status(500).json(error);
+  }
+};
+
+module.exports.editMaintainanceForAdmin = async (req, res) => {
+  try {
+    if (!req.user.isAdmin)
+      return res
+        .status(403)
+        .json({ message: "You don't have permission to access this route!" });
+    const getMaintainance = await maintainanceSchema.findByIdAndUpdate(
+      { _id: req.params.id },
+      req.body
+    );
+    return res
+      .status(200)
+      .json( { getMaintainance,message: "Maintainance Updated successfully !" });
+  } catch (error) {
+    console.log("getMaintainance error", error);
+    return res.status(500).json(error);
+  }
+};

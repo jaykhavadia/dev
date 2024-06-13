@@ -24,7 +24,7 @@ const SignUp = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const navigate = useNavigate();
-  const { checkLogin } = useContext(AuthContext);
+  const { checkLogin, checkAdmin } = useContext(AuthContext);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -116,6 +116,7 @@ const SignUp = () => {
   };
 
   useEffect(() => {
+    checkAdmin();
     checkLogin('/sign-up');
     // Zoom in after a delay
     setTimeout(() => {

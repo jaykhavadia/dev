@@ -1,0 +1,17 @@
+.table-container {
+  overflow-x: auto;
+  /* Horizontal scroll */
+  white-space: nowrap;
+  /* Prevent line breaks */
+}
+
+
+/* Hide scrollbar for Chrome, Safari, and Opera */
+.container {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar for IE, Edge, and Firefox */
+.container::-webkit-scrollbar {
+  display: none;
+}

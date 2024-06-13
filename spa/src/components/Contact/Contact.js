@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Footer from "../Footer/Footer";
 import Navbar from "../Navbar/Navbar";
 import { contact } from "../../service/api_service";
 import toast from "react-hot-toast";
+import { AuthContext } from "../../context/AuthContext";
 
 const Contact = () => {
   const [errors, setErrors] = useState({});
@@ -12,6 +13,10 @@ const Contact = () => {
     phone: "",
     message: "",
   });
+  const { checkAdmin } = useContext(AuthContext);
+  useEffect(() => {
+    checkAdmin();
+  },[]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
