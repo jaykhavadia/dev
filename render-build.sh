@@ -6,4 +6,4 @@ npm install -f && npm run build
 echo "Installing backend dependencies"
 cd ..
 cd backend
-npm install -f && npm run start
+npm install -f
