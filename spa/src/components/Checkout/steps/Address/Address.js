@@ -14,7 +14,7 @@ import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Address = (props) => {
   const navigate = useNavigate();
-  const { setAddressValidity } = props;
+  const { setAddressValidity, setLoading } = props;
   const { Logout } = useContext(AuthContext);
   const [zoom, setZoom] = useState("scale-0");
   const [userData, setUserData] = useState();
@@ -130,6 +130,7 @@ const Address = (props) => {
   };
 
   const saveAddress = async () => {
+    setLoading(true);
     const token = localStorage.getItem("accessToken");
     if (!token) {
       toast.error("Token Expired");
@@ -146,18 +147,23 @@ const Address = (props) => {
         const result = await createAddress(formData); // Call getSomeData function from the API service
         if (result) {
           setAddressValidity(true);
-          toast.success(result.message || 'Address saved successfully!');
+          toast.success(result.message || "Address saved successfully!");
           resetFields();
           await setAddressData();
+          setLoading(false);
         }
       } catch (error) {
+        setLoading(false);
         console.error("Error while Login:", error);
         toast.error(error.message);
       }
     }
+    setLoading(false);
   };
 
   const handleUpdatedAddress = async () => {
+    setLoading(true);
+
     const token = localStorage.getItem("accessToken");
     if (!token) {
       toast.error("Token Expired");
@@ -170,19 +176,22 @@ const Address = (props) => {
         if (formData?.userId) {
           delete formData?.userId;
         }
-        console.log('formData', formData);
+        console.log("formData", formData);
         const result = await updateAddress(formData); // Call getSomeData function from the API service
         setAddressValidity(true);
         if (result) {
           toast.success(result.message);
           resetFields();
           await setAddressData();
+          setLoading(false);
         }
       } catch (error) {
+        setLoading(false);
         console.error("Error while Login:", error);
         toast.error(error.message);
       }
     }
+    setLoading(false);
   };
 
   const resetFields = () => {
@@ -200,17 +209,20 @@ const Address = (props) => {
 
   const setAddressData = async () => {
     try {
+      setLoading(true);
+
       const response = await getAddressDetails();
 
       if (response === null) {
         return;
       }
       if (response?.message === "Invalid token") {
+        setLoading(false);
         toast.error(response?.message);
         localStorage.clear();
         navigate("/login");
       }
-      if(response && response.address){
+      if (response && response.address) {
         setFormData(response.address);
         setIsDataAvailable(true);
         const stateObj = indianStates.find(
@@ -220,8 +232,10 @@ const Address = (props) => {
         setCities(City.getCitiesOfState("IN", stateObj?.isoCode));
         setAddressValidity(true);
       }
+      setLoading(false);
     } catch (error) {
-      console.log('No Address found', error);
+      setLoading(false);
+      console.log("No Address found", error);
       setIsDataAvailable(false);
       toast("Add your Address", {
         icon: (

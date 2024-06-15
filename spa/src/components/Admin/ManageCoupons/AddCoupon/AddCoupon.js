@@ -7,13 +7,12 @@ import {
   getCouponByCODE,
   ME,
   updateCoupon,
-  updateProduct,
 } from "../../../../service/api_service";
 import Footer from "../../../Footer/Footer";
 import Sidebar from "../../../Sidebar/Sidebar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import Loader from "../../../common/Loader/Loader";
 const AddCoupon = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -24,6 +23,7 @@ const AddCoupon = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [couponId, setCouponId] = useState();
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -84,8 +84,11 @@ const AddCoupon = () => {
         value: "",
       }));
     }
-    if ((formData.type === 'fixedAmount') && formData.minimumPurchasingPrice < formData.value) {
-      errors.value = 'should be more then Minimum Purchasing Price';
+    if (
+      formData.type === "fixedAmount" &&
+      formData.minimumPurchasingPrice < formData.value
+    ) {
+      errors.value = "should be more then Minimum Purchasing Price";
     }
 
     setErrors(errors);
@@ -99,6 +102,7 @@ const AddCoupon = () => {
   };
 
   const submitForm = async () => {
+    setLoading(true);
     const token = localStorage.getItem("accessToken");
     if (!token) {
       toast.error("Token Expired");
@@ -124,14 +128,9 @@ const AddCoupon = () => {
           resetFields();
           navigate("/admin/manage-coupons");
         }
-        return;
-        // result = await addProduct(formData);
-        // if (result) {
-        //   toast.success("Product added Successful!");
-        //   resetFields();
-        //   // await setGardenData();
-        // }
+        setLoading(false);
       } catch (error) {
+        setLoading(false);
         console.error("Error while Login:", error);
         toast.error(error.message);
       }
@@ -139,6 +138,8 @@ const AddCoupon = () => {
   };
 
   const handleUpdatedCoupon = async () => {
+    setLoading(true);
+
     const token = localStorage.getItem("accessToken");
     if (!token) {
       toast.error("Token Expired");
@@ -154,11 +155,13 @@ const AddCoupon = () => {
         console.log("form Data", formData);
         const result = await updateCoupon(formData, couponId); // Call getSomeData function from the API service
         if (result) {
+          setLoading(false);
           toast.success(result.message);
           resetFields();
           navigate("/admin/manage-coupons");
         }
       } catch (error) {
+        setLoading(false);
         console.error("Error while Login:", error);
         toast.error(error.message);
       }
@@ -195,29 +198,38 @@ const AddCoupon = () => {
   };
 
   const setCouponData = async () => {
-    const response = await getCouponByCODE(id);
+    try {
+      setLoading(true);
+      const response = await getCouponByCODE(id);
 
-    if (response === null) {
-      return;
+      if (response === null) {
+        return;
+      }
+      if (response?.message === "Invalid token") {
+        toast.error(response?.message);
+        localStorage.clear();
+        navigate("/login");
+      }
+      console.log("resonse", response);
+      const transformData = {
+        title: response.couponDetail.title,
+        type: response.couponDetail.type,
+        value: response.couponDetail.value,
+        startingDate: new Date(
+          response.couponDetail.startingDate
+        ).toISOString(), // or format as needed
+        endingDate: new Date(response.couponDetail.endingDate).toISOString(), // or format as needed
+        maximumDiscountPrice: response.couponDetail.maximumDiscountPrice,
+        minimumPurchasingPrice: response.couponDetail.minimumPurchasingPrice,
+      };
+      setCouponId(response.couponDetail._id);
+      setFormData(transformData);
+      setIsDataAvailable(true);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error in [AddCoupon] [setCouponData] :", error);
     }
-    if (response?.message === "Invalid token") {
-      toast.error(response?.message);
-      localStorage.clear();
-      navigate("/login");
-    }
-    console.log("resonse", response);
-    const transformData = {
-      title: response.couponDetail.title,
-      type: response.couponDetail.type,
-      value: response.couponDetail.value,
-      startingDate: new Date(response.couponDetail.startingDate).toISOString(), // or format as needed
-      endingDate: new Date(response.couponDetail.endingDate).toISOString(), // or format as needed
-      maximumDiscountPrice: response.couponDetail.maximumDiscountPrice,
-      minimumPurchasingPrice: response.couponDetail.minimumPurchasingPrice,
-    };
-    setCouponId(response.couponDetail._id);
-    setFormData(transformData);
-    setIsDataAvailable(true);
   };
 
   useEffect(() => {
@@ -228,6 +240,8 @@ const AddCoupon = () => {
     }
     async function getProductData() {
       try {
+        setLoading(true);
+
         const isAdmin = await me();
         if (!isAdmin) {
           toast.error("You are not a admin");
@@ -243,7 +257,9 @@ const AddCoupon = () => {
         if (id) {
           await setCouponData();
         }
+        setLoading(false);
       } catch (error) {
+        setLoading(false);
         console.error("getProductData", error);
         throw error;
       }
@@ -258,242 +274,245 @@ const AddCoupon = () => {
 
   return (
     <div>
-      <Sidebar />
-      <div
-        className='container-fluid page-header py-5 wow fadeIn'
-        data-wow-delay='0.1s'
-      >
-        <div className='container text-center py-5'>
-          <h1 className='display-3 text-white mb-4 animated slideInDown'>
-            Add Coupon
-          </h1>
-          <nav aria-label='breadcrumb animated slideInDown'>
-            <ol className='breadcrumb justify-content-center mb-0'>
-              <li className='breadcrumb-item'>Home</li>
-              <li className='breadcrumb-item'>Pages</li>
-              <li className='breadcrumb-item' aria-current='page'>
-                admin / add-coupon
-              </li>
-            </ol>
-          </nav>
-          {/* ----------------- Form ----------------------- */}
-          <div>
-            <div className='flex min-h-full flex-col justify-center px-6 pt-12 lg:px-8'>
-              <div className='sm:mx-auto sm:w-full p-6 sm:max-w-xl bg-gray-100 border border-gray-100 rounded-lg shadow dark:bg-gray-100 dark:border-gray-200'>
-                <div className='sm:mx-auto sm:w-full sm:max-w-xl'>
-                  <div className='space-y-6'>
-                    <div>
-                      <div className='flex justify-start'>
-                        <label className='block text-sm font-medium leading-6 text-gray-900'>
-                          Coupon CODE
-                        </label>
-                      </div>
-                      <div className='mt-2'>
-                        <input
-                          id='title'
-                          name='title'
-                          type='text'
-                          autoComplete='title'
-                          placeholder='Enter your CODE'
-                          required
-                          value={formData?.title}
-                          className={`form-control ${
-                            errors?.title && "is-invalid"
-                          }`}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      {errors?.title && (
-                        <div
-                          style={{ display: "block" }}
-                          className='invalid-feedback'
-                        >
-                          Your Coupon CODE {errors?.title}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className='flex flex-col sm:flex-row justify-between'>
-                      <div className='mr-4 sm:w-56 w-full'>
+      {loading ? <Loader /> : ""}
+      <div>
+        <Sidebar />
+        <div
+          className='container-fluid page-header py-5 wow fadeIn'
+          data-wow-delay='0.1s'
+        >
+          <div className='container text-center py-5'>
+            <h1 className='display-3 text-white mb-4 animated slideInDown'>
+              Add Coupon
+            </h1>
+            <nav aria-label='breadcrumb animated slideInDown'>
+              <ol className='breadcrumb justify-content-center mb-0'>
+                <li className='breadcrumb-item'>Home</li>
+                <li className='breadcrumb-item'>Pages</li>
+                <li className='breadcrumb-item' aria-current='page'>
+                  admin / add-coupon
+                </li>
+              </ol>
+            </nav>
+            {/* ----------------- Form ----------------------- */}
+            <div>
+              <div className='flex min-h-full flex-col justify-center px-6 pt-12 lg:px-8'>
+                <div className='sm:mx-auto sm:w-full p-6 sm:max-w-xl bg-gray-100 border border-gray-100 rounded-lg shadow dark:bg-gray-100 dark:border-gray-200'>
+                  <div className='sm:mx-auto sm:w-full sm:max-w-xl'>
+                    <div className='space-y-6'>
+                      <div>
                         <div className='flex justify-start'>
                           <label className='block text-sm font-medium leading-6 text-gray-900'>
-                            value
+                            Coupon CODE
                           </label>
                         </div>
-                        <input
-                          id='value'
-                          name='value'
-                          type='number'
-                          placeholder='Enter value'
-                          value={formData?.value}
-                          onChange={handleChange}
-                          className={`form-control ${
-                            errors?.value && "is-invalid"
-                          }`}
-                          min={1}
-                        />
-                        {errors?.value && (
-                          <div className='invalid-feedback'>
-                            Your Coupon Value {errors?.value}
+                        <div className='mt-2'>
+                          <input
+                            id='title'
+                            name='title'
+                            type='text'
+                            autoComplete='title'
+                            placeholder='Enter your CODE'
+                            required
+                            value={formData?.title}
+                            className={`form-control ${
+                              errors?.title && "is-invalid"
+                            }`}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        {errors?.title && (
+                          <div
+                            style={{ display: "block" }}
+                            className='invalid-feedback'
+                          >
+                            Your Coupon CODE {errors?.title}
                           </div>
                         )}
                       </div>
 
-                      <div className='sm:w-56 w-full'>
-                        <div className='flex justify-start'>
-                          <label className='block text-sm font-medium leading-6 text-gray-900'>
-                            Type
-                          </label>
-                        </div>
-                        <select
-                          id='type'
-                          name='type'
-                          value={formData.type}
-                          onChange={handleChange}
-                          className={`form-control ${
-                            errors?.type && "is-invalid"
-                          }`}
-                        >
-                          <option value=''>Select Type</option>
-                          <option value='Percentage'>Percentage</option>
-                          <option value='fixedAmount'>Fixed Amount</option>
-                        </select>
-                        {errors?.type && (
-                          <div className='invalid-feedback'>
-                            Your Coupon type {errors?.type}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {formData.type !== "" && (
-                      <div
-                        className={
-                          formData.type === "Percentage"
-                            ? "flex flex-col sm:flex-row justify-between"
-                            : ""
-                        }
-                      >
-                        <div
-                          className={
-                            formData.type === "Percentage"
-                              ? "sm:w-56 w-full"
-                              : "w-full"
-                          }
-                        >
+                      <div className='flex flex-col sm:flex-row justify-between'>
+                        <div className='mr-4 sm:w-56 w-full'>
                           <div className='flex justify-start'>
                             <label className='block text-sm font-medium leading-6 text-gray-900'>
-                              Minimum Purchasing Price
+                              value
                             </label>
                           </div>
                           <input
-                            id='minimumPurchasingPrice'
-                            name='minimumPurchasingPrice'
+                            id='value'
+                            name='value'
                             type='number'
-                            placeholder='Enter Minimum Purchasing Price'
-                            value={formData?.minimumPurchasingPrice}
+                            placeholder='Enter value'
+                            value={formData?.value}
                             onChange={handleChange}
                             className={`form-control ${
-                              errors?.minimumPurchasingPrice && "is-invalid"
+                              errors?.value && "is-invalid"
                             }`}
                             min={1}
                           />
-                          {errors?.minimumPurchasingPrice && (
+                          {errors?.value && (
                             <div className='invalid-feedback'>
-                              Your Coupon minimum purchasing price{" "}
-                              {errors?.minimumPurchasingPrice}
+                              Your Coupon Value {errors?.value}
                             </div>
                           )}
                         </div>
-                        {formData.type === "Percentage" && (
-                          <div className='sm:w-56 w-full'>
+
+                        <div className='sm:w-56 w-full'>
+                          <div className='flex justify-start'>
+                            <label className='block text-sm font-medium leading-6 text-gray-900'>
+                              Type
+                            </label>
+                          </div>
+                          <select
+                            id='type'
+                            name='type'
+                            value={formData.type}
+                            onChange={handleChange}
+                            className={`form-control ${
+                              errors?.type && "is-invalid"
+                            }`}
+                          >
+                            <option value=''>Select Type</option>
+                            <option value='Percentage'>Percentage</option>
+                            <option value='fixedAmount'>Fixed Amount</option>
+                          </select>
+                          {errors?.type && (
+                            <div className='invalid-feedback'>
+                              Your Coupon type {errors?.type}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {formData.type !== "" && (
+                        <div
+                          className={
+                            formData.type === "Percentage"
+                              ? "flex flex-col sm:flex-row justify-between"
+                              : ""
+                          }
+                        >
+                          <div
+                            className={
+                              formData.type === "Percentage"
+                                ? "sm:w-56 w-full"
+                                : "w-full"
+                            }
+                          >
                             <div className='flex justify-start'>
                               <label className='block text-sm font-medium leading-6 text-gray-900'>
-                                Maximum Discount Price
+                                Minimum Purchasing Price
                               </label>
                             </div>
                             <input
-                              id='maximumDiscountPrice'
-                              name='maximumDiscountPrice'
+                              id='minimumPurchasingPrice'
+                              name='minimumPurchasingPrice'
                               type='number'
-                              placeholder='Enter Maximum Discount Price'
-                              value={formData?.maximumDiscountPrice}
+                              placeholder='Enter Minimum Purchasing Price'
+                              value={formData?.minimumPurchasingPrice}
                               onChange={handleChange}
                               className={`form-control ${
-                                errors?.maximumDiscountPrice && "is-invalid"
+                                errors?.minimumPurchasingPrice && "is-invalid"
                               }`}
                               min={1}
                             />
-                            {errors?.maximumDiscountPrice && (
+                            {errors?.minimumPurchasingPrice && (
                               <div className='invalid-feedback'>
-                                Your Coupon Maximum Discount Price{" "}
-                                {errors?.maximumDiscountPrice}
+                                Your Coupon minimum purchasing price{" "}
+                                {errors?.minimumPurchasingPrice}
                               </div>
                             )}
                           </div>
-                        )}
-                      </div>
-                    )}
+                          {formData.type === "Percentage" && (
+                            <div className='sm:w-56 w-full'>
+                              <div className='flex justify-start'>
+                                <label className='block text-sm font-medium leading-6 text-gray-900'>
+                                  Maximum Discount Price
+                                </label>
+                              </div>
+                              <input
+                                id='maximumDiscountPrice'
+                                name='maximumDiscountPrice'
+                                type='number'
+                                placeholder='Enter Maximum Discount Price'
+                                value={formData?.maximumDiscountPrice}
+                                onChange={handleChange}
+                                className={`form-control ${
+                                  errors?.maximumDiscountPrice && "is-invalid"
+                                }`}
+                                min={1}
+                              />
+                              {errors?.maximumDiscountPrice && (
+                                <div className='invalid-feedback'>
+                                  Your Coupon Maximum Discount Price{" "}
+                                  {errors?.maximumDiscountPrice}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                    <div>
-                      <div className='mt-4 w-full flex flex-col sm:flex-row justify-between items-center'>
-                        <div className='relative sm:w-44 w-full '>
-                          <DatePicker
-                            selected={startDate}
-                            onChange={(date) => {
-                              setStartDate(date);
-                              if (date > endDate) {
-                                setEndDate(date);
-                              }
-                            }}
-                            selectsStart
-                            startDate={startDate}
-                            endDate={endDate}
-                            dateFormat='dd/MM/yyyy'
-                            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                            placeholderText='Select start date'
-                          />
-                        </div>
-                        <span className='mx-4 text-gray-500'>to</span>
-                        <div className='sm:w-44 w-full'>
-                          <DatePicker
-                            selected={endDate}
-                            onChange={(date) => setEndDate(date)}
-                            selectsEnd
-                            startDate={startDate}
-                            endDate={endDate}
-                            minDate={startDate}
-                            dateFormat='dd/MM/yyyy'
-                            className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                            placeholderText='Select end date'
-                          />
+                      <div>
+                        <div className='mt-4 w-full flex flex-col sm:flex-row justify-between items-center'>
+                          <div className='relative sm:w-44 w-full '>
+                            <DatePicker
+                              selected={startDate}
+                              onChange={(date) => {
+                                setStartDate(date);
+                                if (date > endDate) {
+                                  setEndDate(date);
+                                }
+                              }}
+                              selectsStart
+                              startDate={startDate}
+                              endDate={endDate}
+                              dateFormat='dd/MM/yyyy'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                              placeholderText='Select start date'
+                            />
+                          </div>
+                          <span className='mx-4 text-gray-500'>to</span>
+                          <div className='sm:w-44 w-full'>
+                            <DatePicker
+                              selected={endDate}
+                              onChange={(date) => setEndDate(date)}
+                              selectsEnd
+                              startDate={startDate}
+                              endDate={endDate}
+                              minDate={startDate}
+                              dateFormat='dd/MM/yyyy'
+                              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                              placeholderText='Select end date'
+                            />
+                          </div>
                         </div>
                       </div>
+
+                      {isDataAvailable ? (
+                        <button
+                          className='flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                          onClick={handleUpdatedCoupon}
+                        >
+                          Update your Coupon
+                        </button>
+                      ) : (
+                        <button
+                          className='flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                          onClick={submitForm}
+                        >
+                          Add Coupon
+                        </button>
+                      )}
                     </div>
-
-                    {isDataAvailable ? (
-                      <button
-                        className='flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                        onClick={handleUpdatedCoupon}
-                      >
-                        Update your Coupon
-                      </button>
-                    ) : (
-                      <button
-                        className='flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                        onClick={submitForm}
-                      >
-                        Add Coupon
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
             </div>
+            {/* ----------------- Form ----------------------- */}
           </div>
-          {/* ----------------- Form ----------------------- */}
         </div>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 };

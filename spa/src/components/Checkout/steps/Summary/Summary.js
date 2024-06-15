@@ -4,7 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { getCouponByCODE } from "../../../../service/api_service";
 
 const Summary = (prams) => {
-  const { cartData, removeFromCart, addToCart, grandTotal, cartSize } = prams;
+  const {
+    cartData,
+    removeFromCart,
+    addToCart,
+    grandTotal,
+    cartSize,
+    setLoading,
+  } = prams;
 
   const [couponErrors, setCouponErrors] = useState();
   const [couponErrorMessage, setCouponErrorMessage] = useState();
@@ -13,13 +20,16 @@ const Summary = (prams) => {
   const navigate = useNavigate();
 
   const handleCouponChange = (e) => {
+    setLoading(true);
     setCoupon(e.target.value.toUpperCase());
     setCouponErrorMessage();
     setCouponErrors(false);
+    setLoading(false);
   };
 
   const checkCoupon = async (e) => {
     try {
+      setLoading(true);
       console.log("Checking coupon", coupon);
       const response = await getCouponByCODE(coupon, grandTotal);
       if (response === null) {
@@ -43,7 +53,7 @@ const Summary = (prams) => {
         return;
       }
       if (response?.message === "Coupon Applied Successfully!") {
-        toast.success( response?.message || "Coupon Added!");
+        toast.success(response?.message || "Coupon Added!");
 
         localStorage.setItem("coupon", JSON.stringify(response.couponDetail));
         setActiveCoupon({
@@ -51,7 +61,9 @@ const Summary = (prams) => {
           totalDiscountedPrice: response.totalDiscountedPrice,
         });
       }
+      setLoading(false);
     } catch (error) {
+      setLoading(false);
       console.log("[summary] [checkCoupon] Error :", error);
       toast.error(error?.message);
     }
@@ -95,7 +107,10 @@ const Summary = (prams) => {
                       <div className='flex items-center'>
                         <button
                           className='px-2 py-1 bg-gray-300 text-gray-700 rounded-l-md hover:bg-gray-400 transition duration-300'
-                          onClick={() => {removeFromCart(product); clearCoupon()}}
+                          onClick={() => {
+                            removeFromCart(product);
+                            clearCoupon();
+                          }}
                         >
                           -
                         </button>
@@ -104,7 +119,10 @@ const Summary = (prams) => {
                         </span>
                         <button
                           className='px-2 py-1 bg-gray-300 text-gray-700 rounded-r-md hover:bg-gray-400 transition duration-300'
-                          onClick={() => {addToCart(product); clearCoupon()}}
+                          onClick={() => {
+                            addToCart(product);
+                            clearCoupon();
+                          }}
                         >
                           +
                         </button>
