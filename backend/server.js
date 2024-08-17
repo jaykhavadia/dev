@@ -1,5 +1,6 @@
 // process.loadEnvFile();
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const authentication = require("./routes/user.js");
 const mongoose = require("mongoose");
