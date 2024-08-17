@@ -37,6 +37,9 @@ import ProductDetail from "./components/ProductDetail/ProductDetail";
 import AddProducts from "./components/Admin/ManageProducts/AddProducts/AddProducts";
 import CouponListing from "./components/Admin/ManageCoupons/CouponListing/CouponListing";
 import AddCoupon from "./components/Admin/ManageCoupons/AddCoupon/AddCoupon";
+import Service from "./components/Service/Service";
+import QuoteModal from "./components/common/QuoteModal/QuoteModal";
+import ManageQuote from "./components/Admin/ManageQuote/ManageQuote";
 
 let token = localStorage.getItem("accessToken");
 axios.interceptors.request.use(
@@ -59,6 +62,9 @@ root.render(
   <BrowserRouter>
     <AuthContextProvider>
       <div>
+        <div>
+          <QuoteModal/>
+        </div>
         <Routes>
           <Route
             path='*'
@@ -87,6 +93,7 @@ root.render(
           <Route path='garden/maintenance' element={<GardenMaintenance />} />
 
           <Route path='/admin/manage-maintenance' element={<ManageMaintenance />} />
+          <Route path='/admin/manage-quote' element={<ManageQuote />} />
           <Route path='/admin/manage-products' element={<ProductsList />} />
           <Route path='/admin/add-products' element={<AddProducts />} />
           <Route path='/admin/edit-product/:id' element={<AddProducts />} />
@@ -97,6 +104,8 @@ root.render(
           <Route path='/products' element={<Products />} />
           <Route path='/products/:id' element={<ProductDetail />} />
           <Route path='/products/checkout' element={<Checkout />} />
+
+          <Route path='/service/:id' element={<Service />} />
         </Routes>
         <Toaster
           position='top-right'

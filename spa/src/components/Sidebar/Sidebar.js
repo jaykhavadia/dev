@@ -78,6 +78,12 @@ const Sidebar = () => {
                 >
                   Manage Coupons
                 </a>
+                <a
+                  href={(token && isAdmin) ? "/admin/manage-quote" : "/login"}
+                  className='dropdown-item'
+                >
+                  Manage Quote
+                </a>
               </div>
             </div>
             {token && (

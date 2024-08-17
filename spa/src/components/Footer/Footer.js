@@ -1,4 +1,5 @@
 const Footer = () => {
+  const token = localStorage.getItem("accessToken");
   return (
     <div>
       <div
@@ -10,8 +11,8 @@ const Footer = () => {
             <div className='col-lg-3 col-md-6'>
               <h4 className='text-white mb-4'>Our Office</h4>
               <p className='mb-2'>
-                <i className='fa fa-map-marker-alt me-3'></i>123 Street, New York,
-                USA
+                <i className='fa fa-map-marker-alt me-3'></i>123 Street, New
+                York, USA
               </p>
               <p className='mb-2'>
                 <i className='fa fa-phone-alt me-3'></i>+012 345 67890
@@ -48,19 +49,23 @@ const Footer = () => {
             </div>
             <div className='col-lg-3 col-md-6'>
               <h4 className='text-white mb-4'>Services</h4>
-              <a className='btn btn-link' href=''>
+              <a className='btn btn-link' href='/service/landscaping'>
                 Landscaping
               </a>
-              <a className='btn btn-link' href=''>
+              <a className='btn btn-link' href='/service/pruning-plants'>
                 Pruning plants
               </a>
-              <a className='btn btn-link' href=''>
+              <a className='btn btn-link' href='/service/urban-gardening'>
                 Urban Gardening
               </a>
-              <a className='btn btn-link' href=''>
+              
+              <a
+                className='btn btn-link'
+                href={token ? "/garden/maintenance/list" : "/login"}
+              >
                 Garden Maintenance
               </a>
-              <a className='btn btn-link' href=''>
+              <a className='btn btn-link' href='/service/green-technology'>
                 Green Technology
               </a>
             </div>
@@ -72,9 +77,9 @@ const Footer = () => {
               <a className='btn btn-link' href=''>
                 Contact Us
               </a>
-              <a className='btn btn-link' href=''>
+              {/* <a className='btn btn-link' href=''>
                 Our Services
-              </a>
+              </a> */}
               <a className='btn btn-link' href=''>
                 Terms & Condition
               </a>
@@ -84,7 +89,9 @@ const Footer = () => {
             </div>
             <div className='col-lg-3 col-md-6'>
               <h4 className='text-white mb-4'>Newsletter</h4>
-              <span>Dolor amet sit justo amet elitr clita ipsum elitr est.</span>
+              <span>
+                Dolor amet sit justo amet elitr clita ipsum elitr est.
+              </span>
               <div className='position-relative w-100'>
                 <input
                   className='form-control bg-light border-light w-100 py-3 ps-4 pe-5'

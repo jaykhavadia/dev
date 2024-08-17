@@ -16,6 +16,7 @@ import { faPaperclip } from "@fortawesome/free-solid-svg-icons";
 import { State, City } from "country-state-city";
 import { Navigate, useNavigate } from "react-router-dom";
 import Loader from "../common/Loader/Loader";
+import QuoteModal from "../common/QuoteModal/QuoteModal";
 
 const GardenRegistration = () => {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ const GardenRegistration = () => {
   const [Cities, setCities] = useState([]);
   const [image, setImage] = useState("");
   const [selectedState, setSelectedState] = useState("");
+  const [addGarden, setAddGarden] = useState(false);
   const [indianStates, setIndianStates] = useState(
     State.getStatesOfCountry("IN")
   );
@@ -43,8 +45,8 @@ const GardenRegistration = () => {
     plantDetails: "",
     waterSupplyMethod: "",
     image: "",
-    userId: "",
   });
+  const [gardenData, setGardenResponse] = useState();
   const [isDataAvailable, setIsDataAvailable] = useState(false);
 
   const handleChange = (e) => {
@@ -169,9 +171,6 @@ const GardenRegistration = () => {
     const isValid = validateForm();
     if (isValid) {
       // Perform form submission
-      if (!formData.userId) {
-        await me();
-      }
 
       try {
         const result = await registerGarden(formData); // Call getSomeData function from the API service
@@ -179,6 +178,7 @@ const GardenRegistration = () => {
           toast.success("Garden registered Successful!");
           resetFields();
           await setGardenData();
+          setAddGarden(false);
           setLoading(false);
         }
       } catch (error) {
@@ -187,6 +187,7 @@ const GardenRegistration = () => {
         toast.error(error.message);
       }
     }
+    setLoading(false);
   };
 
   const handleUpdatedRegistration = async () => {
@@ -210,6 +211,7 @@ const GardenRegistration = () => {
           toast.success("Garden data updated Successful!");
           resetFields();
           await setGardenData();
+          setAddGarden(false);
           setLoading(false);
         }
       } catch (error) {
@@ -234,7 +236,6 @@ const GardenRegistration = () => {
       plantDetails: "",
       waterSupplyMethod: "",
       image: "",
-      userId: "",
     });
     setImage("");
     setSelectedState("");
@@ -245,20 +246,34 @@ const GardenRegistration = () => {
     try {
       const user = await ME();
       setUserData(user);
-      setFormData((prevData) => ({
-        ...prevData,
-        userId: user?.user?._id,
-      }));
       localStorage.setItem("currentUser", JSON.stringify(user));
     } catch (error) {
       console.error("ME Error", error);
-      if (
-        error.message === "jwt expired" ||
-        error.message === "Network Error"
-      ) {
-        Logout();
-      }
+      toast.error(error.message);
+      Logout();
       throw new Error(error);
+    }
+  };
+
+  const setGardenFormData = async (gardenData) => {
+    console.log("Clicked Garden", gardenData);
+
+    setLoading(true);
+    try {
+      console.log("Adding Data", gardenData);
+      setIsDataAvailable(true);
+      const stateObj = indianStates.find(
+        (state) => state.name === gardenData.state
+      );
+      setFormData(gardenData);
+      setSelectedState(stateObj);
+      setCities(City.getCitiesOfState("IN", stateObj?.isoCode));
+      setAddGarden(true);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error in  setGardenData", error);
+      throw error;
     }
   };
 
@@ -275,13 +290,7 @@ const GardenRegistration = () => {
         localStorage.clear();
         navigate("/login");
       }
-      setFormData(response);
-      setIsDataAvailable(true);
-      const stateObj = indianStates.find(
-        (state) => state.name === response.state
-      );
-      setSelectedState(stateObj);
-      setCities(City.getCitiesOfState("IN", stateObj?.isoCode));
+      setGardenResponse(response);
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -344,8 +353,50 @@ const GardenRegistration = () => {
                 </li>
               </ol>
             </nav>
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5 ${
+                addGarden ? "hidden" : "items-center justify-items-center"
+              }`}
+            >
+              {gardenData?.map((garden) => (
+                <div
+                  key={garden._id}
+                  className='relative p-4 rounded-lg shadow-lg overflow-hidden mt-4 bg-white w-60 cursor-pointer'
+                  style={{
+                    backgroundImage: `url(https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                  onClick={() => setGardenFormData(garden)}
+                >
+                  <div className='absolute inset-0 bg-black opacity-50'></div>
+                  <div className='relative z-10 text-white'>
+                    <h3 className='text-white text-xl font-semibold'>
+                      {garden.name}
+                    </h3>
+                    <p className='text-sm'>
+                      {garden.city}, {garden.state}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div className='relative'>
+                <div
+                  className='flex flex-col justify-center items-center p-4 mt-4 rounded-lg shadow-lg overflow-hidden bg-white w-40 h-[90%] cursor-pointer '
+                  onClick={() => {
+                    setAddGarden(true);
+                    resetFields();
+                  }}
+                >
+                  <h3 className='text-5xl font-semibold'>
+                    <FontAwesomeIcon icon='fa-solid fa-circle-plus' />
+                  </h3>
+                  <span>Add</span>
+                </div>
+              </div>
+            </div>
             {/* ----------------- Form ----------------------- */}
-            <div>
+            <div className={addGarden ? "" : "hidden"}>
               <div className='flex min-h-full flex-col justify-center px-6 pt-12 lg:px-8'>
                 <div className='sm:mx-auto sm:w-full p-6 sm:max-w-xl bg-gray-100 border border-gray-100 rounded-lg shadow dark:bg-gray-100 dark:border-gray-200'>
                   <div className='sm:mx-auto sm:w-full sm:max-w-xl'>

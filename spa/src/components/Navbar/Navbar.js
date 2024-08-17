@@ -9,11 +9,17 @@ const Navbar = () => {
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
+  
   const token = localStorage.getItem("accessToken");
+  
   const Logout = () => {
     toast.success("Logout Successful!");
     localStorage.clear();
     navigate("/home");
+  };
+
+  const Login = () => {
+    navigate("/login");
   };
 
   return (
@@ -52,9 +58,12 @@ const Navbar = () => {
             {/* <a href='/about' className='nav-item nav-link'>
             About
           </a> */}
-            {/* <a href='/login' className='nav-item nav-link'>
-            Services
-          </a> */}
+            <a
+              href={token ? "/garden/registration" : "/login"}
+              className='nav-item nav-link'
+            >
+              Garden Registration
+            </a>
             {/* <a href='/projects' className='nav-item nav-link'>
             Projects
           </a> */}
@@ -67,16 +76,28 @@ const Navbar = () => {
               </div>
               <div className='dropdown-menu bg-light m-0'>
                 <a
-                  href={token ? "/garden/registration" : "/login"}
-                  className='dropdown-item'
-                >
-                  Garden Registration
-                </a>
-                <a
                   href={token ? "/garden/maintenance/list" : "/login"}
                   className='dropdown-item'
                 >
                   Garden Maintenance
+                </a>
+                <a className='dropdown-item' href='/service/landscaping'>
+                  Landscaping
+                </a>
+                <a className='dropdown-item' href='/service/pruning-plants'>
+                  Pruning plants
+                </a>
+                <a className='dropdown-item' href='/service/urban-gardening'>
+                  Urban Gardening
+                </a>
+                <a className='dropdown-item' href='/service/green-technology'>
+                  Green Technology
+                </a>
+                <a
+                  className='dropdown-item'
+                  href='/service/irrigation-drainage'
+                >
+                  Irrigation & Drainage
                 </a>
               </div>
             </div>
@@ -102,18 +123,22 @@ const Navbar = () => {
             <a href='/contact' className='nav-item nav-link'>
               Contact
             </a>
-            {token && (
-              <a onClick={Logout} className='nav-item nav-link'>
+            {token ? (
+              <a onClick={Logout} className='nav-item nav-link cursor-pointer'>
                 Logout
+              </a>
+            ): (
+              <a onClick={Login} className='nav-item nav-link cursor-pointer'>
+                Login
               </a>
             )}
           </div>
-          <a
+          {/* <a
             href=''
             className='btn btn-primary py-4 px-lg-4 rounded-0 d-none d-lg-block'
           >
             Get A Quote<i className='fa fa-arrow-right ms-3'></i>
-          </a>
+          </a> */}
         </div>
       </nav>
     </div>

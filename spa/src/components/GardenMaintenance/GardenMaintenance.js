@@ -137,38 +137,33 @@ const GardenMaintenance = () => {
     }
   };
 
-  const setGardenData = async () => {
-    try {
-      setLoading(true);
-      const response = await getGardenDetails();
-      if (response === null) {
-        toast("Please Register a garden first", {
-          icon: (
-            <FontAwesomeIcon
-              className='text-yellow-700'
-              icon={faExclamationCircle}
-            />
-          ),
-        });
-        navigate("/garden/registration");
-        return;
-      }
-      console.log("response", response);
-      setFormData((prevData) => ({
-        ...prevData,
-        gardenId: response?._id,
-      }));
-    } catch (error) {
-      setLoading(false);
-      if (error?.message === "Invalid token") {
-        toast.error(error?.message);
-        localStorage.clear();
-        navigate("/login");
-      }
-      console.error("Error in [gardenMaintenance] [setGardenData]", error);
-      throw error;
-    }
-  };
+  // const setGardenData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await getGardenDetails();
+  //     if (response === null) {
+  //       toast("Please Register a garden first", {
+  //         icon: (
+  //           <FontAwesomeIcon
+  //             className='text-yellow-700'
+  //             icon={faExclamationCircle}
+  //           />
+  //         ),
+  //       });
+  //       navigate("/garden/registration");
+  //       return;
+  //     }
+  //   } catch (error) {
+  //     setLoading(false);
+  //     if (error?.message === "Invalid token") {
+  //       toast.error(error?.message);
+  //       localStorage.clear();
+  //       navigate("/login");
+  //     }
+  //     console.error("Error in [gardenMaintenance] [setGardenData]", error);
+  //     throw error;
+  //   }
+  // };
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -179,8 +174,14 @@ const GardenMaintenance = () => {
     async function getGardenData() {
       try {
         setLoading(true);
-        await setGardenData();
-        const maintenanceData = await getAllMaintenance();
+        const gardenId = localStorage.getItem("currentGardenId");
+        setFormData((prevData) => ({
+          ...prevData,
+          gardenId,
+        }));
+        const maintenanceData = await getAllMaintenance(gardenId);
+        console.log('maintenanceData', maintenanceData);
+        
         if (
           maintenanceData.length &&
           maintenanceData[maintenanceData?.length - 1]?.status === "pending"
@@ -193,7 +194,7 @@ const GardenMaintenance = () => {
         setLoading(false);
       } catch (error) {
         setLoading(false);
-        console.error('Error in [gardenMaintenance] [getGardenData]', error);
+        console.error("Error in [gardenMaintenance] [getGardenData]", error);
       }
     }
     getGardenData();

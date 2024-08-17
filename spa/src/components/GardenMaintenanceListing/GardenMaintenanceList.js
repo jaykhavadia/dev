@@ -9,11 +9,13 @@ import Moment from "react-moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationCircle } from "@fortawesome/free-solid-svg-icons";
 import Loader from "../common/Loader/Loader";
+import Dropdown from "react-dropdown";
 
 const GardenMaintenanceList = () => {
   const navigate = useNavigate();
   const { checkAdmin } = useContext(AuthContext);
   const [maintenanceList, setMaintenanceList] = useState([]);
+  const [gardenList, setGardenList] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedList, setSelectedList] = useState();
@@ -32,6 +34,10 @@ const GardenMaintenanceList = () => {
         });
         navigate("/garden/registration");
       }
+      console.log("response", response);
+
+      setGardenList(response);
+      return response;
     } catch (error) {
       setLoading(false);
       console.error("Error setGardenData", error);
@@ -54,9 +60,8 @@ const GardenMaintenanceList = () => {
       await checkAdmin();
       if (!isAdmin) {
         setLoading(true);
-        await setGardenData();
-        const maintenanceData = await getAllMaintenance();
-        setMaintenanceList(maintenanceData);
+        const gardeList = await setGardenData();
+        await handleChange({ value: gardeList[0]._id });
         setLoading(false);
       }
     }
@@ -66,6 +71,19 @@ const GardenMaintenanceList = () => {
       //   setZoom("scale-100");
     }, 500); // Adjust the delay as needed
   }, []);
+
+  const options = gardenList.map((item) => ({
+    label: item.name,
+    value: item._id,
+  }));
+
+  const handleChange = async (selectedOption) => {
+    setLoading(true);
+    const maintenanceData = await getAllMaintenance(selectedOption.value);
+    localStorage.setItem("currentGardenId", selectedOption.value);
+    setMaintenanceList(maintenanceData);
+    setLoading(false);
+  };
 
   return (
     <div>
@@ -93,32 +111,52 @@ const GardenMaintenanceList = () => {
             {/* ----------------- Form ----------------------- */}
             <div>
               <div className='flex min-h-full flex-col justify-center px-6 pt-12 lg:px-8'>
-                <div className='sm:mx-auto sm:w-full p-6  bg-gray-100 border border-gray-100 rounded-lg shadow dark:bg-gray-100 dark:border-gray-200'>
+                <div className='sm:mx-auto sm:w-full sm:p-6  bg-gray-100 border border-gray-100 rounded-lg shadow dark:bg-gray-100 dark:border-gray-200'>
                   <div className='sm:mx-auto sm:w-full '>
                     <div className='space-y-6'>
-                      <div className='flex justify-end mr-5 '>
-                        {maintenanceList?.length === 0 ||
-                        (maintenanceList[maintenanceList.length - 1].status !==
-                          "pending" &&
-                          maintenanceList[maintenanceList.length - 1].status !==
-                            "Pending") ? (
+                      <div className='flex justify-end mt-2 sm:mt-0 '>
+                        <div className='flex items-center mr-5'>
+                          <label className='mr-4 font-bold price-column'>
+                            Select an Garden:
+                          </label>
+                          <Dropdown
+                            className='sm:w-40'
+                            options={options}
+                            onChange={handleChange}
+                            value={gardenList[0]?._id}
+                          />
+                        </div>
+                        <div className='mr-5 sm:w-auto'>
                           <button
-                            className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center'
+                            disabled={
+                              !(
+                                maintenanceList?.length === 0 ||
+                                (maintenanceList[maintenanceList.length - 1]
+                                  .status !== "pending" &&
+                                  maintenanceList[maintenanceList.length - 1]
+                                    .status !== "Pending")
+                              )
+                            }
+                            className='bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 sm:px-4 px-2 rounded inline-flex items-center'
                             onClick={() => navigate("/garden/maintenance")}
                           >
                             Create Maintenance
                           </button>
-                        ) : (
-                          ""
-                        )}
+                        </div>
                       </div>
                       <table className='table table-hover'>
                         <thead>
                           <tr>
-                            <th scope='col'>#</th>
+                            <th scope='col' className='price-column'>
+                              #
+                            </th>
                             <th scope='col'>Maintenance Name</th>
-                            <th scope='col'>Date</th>
-                            <th scope='col'>Status</th>
+                            <th scope='col' className='price-column'>
+                              Date
+                            </th>
+                            <th scope='col' className='price-column'>
+                              Status
+                            </th>
                             <th scope='col'>Action</th>
                           </tr>
                         </thead>
@@ -126,16 +164,18 @@ const GardenMaintenanceList = () => {
                           {maintenanceList?.length ? (
                             maintenanceList?.map((maintenanceData, index) => (
                               <tr key={index}>
-                                <th scope='row'>{index + 1}</th>
+                                <th scope='row' className='price-column'>
+                                  {index + 1}
+                                </th>
                                 <td>{maintenanceData.maintenanceName}</td>
-                                <td>
+                                <td className='price-column'>
                                   <Moment
                                     className='py-2 px-4'
                                     format='DD/MM/YYYY'
                                     data={maintenanceData.createdAt}
                                   />
                                 </td>
-                                <td>
+                                <td className='price-column'>
                                   <span
                                     className={`py-2 px-4 badge ${
                                       maintenanceData.status === "Completed"
