@@ -1,5 +1,6 @@
 const Garden = require("../model/gardenModel");
 const maintainanceSchema = require("../model/maintainanceModel");
+const userModel = require("../model/userModel");
 module.exports.registerGarden = async (req, res) => {
   try {
     const {
@@ -13,10 +14,8 @@ module.exports.registerGarden = async (req, res) => {
       width,
       plantDetails,
       waterSupplyMethod,
-      userId,
     } = req.body;
     console.log("FILE ", req.file);
-    const checkGardenIsRegistered = await Garden.findOne({ userId: userId });
 
     if (
       !name ||
@@ -27,17 +26,10 @@ module.exports.registerGarden = async (req, res) => {
       !contact ||
       !height ||
       !width ||
-      !waterSupplyMethod ||
-      !userId
+      !waterSupplyMethod
     ) {
       return res.status(404).json("Required Payload not found");
     }
-    if (checkGardenIsRegistered) {
-      return res
-        .status(403)
-        .json({ message: "you have already registered a garden" });
-    }
-
     const newGarden = new Garden({
       name,
       address,
@@ -50,7 +42,7 @@ module.exports.registerGarden = async (req, res) => {
       plantDetails,
       waterSupplyMethod,
       image: req.file.path,
-      userId,
+      userId: req.user._id,
     });
     const saveGarden = await newGarden.save();
     return res.status(200).json(saveGarden);
@@ -62,7 +54,7 @@ module.exports.registerGarden = async (req, res) => {
 
 module.exports.getGarden = async (req, res) => {
   try {
-    const getGarden = await Garden.findOne({ userId: req.user._id });
+    const getGarden = await Garden.find({ userId: req.user._id });
     return res.status(200).json(getGarden);
   } catch (error) {
     console.log("getGarden error", error);
@@ -73,6 +65,7 @@ module.exports.getGarden = async (req, res) => {
 module.exports.updateGarden = async (req, res) => {
   try {
     const {
+      _id,
       name,
       address,
       city,
@@ -83,11 +76,10 @@ module.exports.updateGarden = async (req, res) => {
       width,
       plantDetails,
       waterSupplyMethod,
-      userId,
     } = req.body;
-    const gardenDetail = await Garden.findOne({ userId: req.user._id });
+    const gardenDetail = await Garden.findOne({ _id });
     const updateGarden = await Garden.findOneAndUpdate(
-      { userId: req.user._id },
+      { _id },
       {
         name,
         address,
@@ -99,9 +91,9 @@ module.exports.updateGarden = async (req, res) => {
         width,
         plantDetails,
         waterSupplyMethod,
-        userId,
         image: req.file ? req.file.path : gardenDetail.image,
-      }
+      },
+      { new: true }
     );
     return res.status(200).json(updateGarden);
   } catch (error) {
@@ -142,9 +134,14 @@ module.exports.addMaintainance = async (req, res) => {
 
 module.exports.getMaintainance = async (req, res) => {
   try {
-    const getMaintainance = await maintainanceSchema.find({
-      userId: req.user._id,
-    });
+    
+    const gardenId = req?.params["id"] || null;
+    let payload = { userId: req.user._id };
+    if (gardenId) {
+      payload.gardenId = gardenId;
+    }
+
+    const getMaintainance = await maintainanceSchema.find(payload);
     return res.status(200).json(getMaintainance);
   } catch (error) {
     console.log("getMaintainance error", error);
@@ -160,7 +157,7 @@ module.exports.getAllMaintainanceForAdmin = async (req, res) => {
         .json({ message: "You don't have permission to access this route!" });
     const getMaintainance = await maintainanceSchema.find({}).populate({
       path: "gardenId",
-      select: ""
+      select: "",
     });
     return res.status(200).json(getMaintainance);
   } catch (error) {
@@ -181,7 +178,10 @@ module.exports.editMaintainanceForAdmin = async (req, res) => {
     );
     return res
       .status(200)
-      .json( { getMaintainance,message: "Maintainance Updated successfully !" });
+      .json({
+        getMaintainance,
+        message: "Maintainance Updated successfully !",
+      });
   } catch (error) {
     console.log("getMaintainance error", error);
     return res.status(500).json(error);

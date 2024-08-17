@@ -1,6 +1,5 @@
 // process.loadEnvFile();
 require("dotenv").config();
-const path = require("path");
 const express = require("express");
 const authentication = require("./routes/user.js");
 const mongoose = require("mongoose");
@@ -12,10 +11,11 @@ const productRoutes = require("./routes/product.js");
 const categoryRoutes = require("./routes/category.js");
 const addressRoutes = require("./routes/address.js");
 const couponRoutes = require("./routes/coupon.js");
+const quoteRoutes = require("./routes/quote.js")
 // Create an Express application
 const app = express();
 const buildPath = path.join(__dirname, "..", "spa", "build");
-
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(buildPath));
 app.use(express.json());
 app.use(cors());
@@ -41,6 +41,7 @@ app.use("/product", productRoutes);
 app.use("/category", categoryRoutes);
 app.use("/address", addressRoutes);
 app.use("/coupon", couponRoutes);
+app.use("/quote", quoteRoutes);
 
 app.get("/test", (req, res) => {
   res.send("Everything is Healthy...!");

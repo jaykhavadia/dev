@@ -1,5 +1,5 @@
 const express = require("express");
-const gardenController = require("../controller/gardenController");
+const quoteController = require("../controller/quoteController.js");
 const route = express.Router();
 const multer = require("multer");
 const path = require("path");
@@ -31,33 +31,8 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
-route.post(
-  "/register",
-  auth,
-  upload.single("image"),
-  gardenController.registerGarden
-);
-route.get("/details", auth, gardenController.getGarden);
-route.patch(
-  "/update",
-  auth,
-  upload.single("image"),
-  gardenController.updateGarden
-);
-route.post("/maintenance", auth, gardenController.addMaintainance);
-route.get("/maintenance/:id?", auth, gardenController.getMaintainance);
-
-// START Routes for Admin Only.
-route.get(
-  "/all-maintenance",
-  auth,
-  gardenController.getAllMaintainanceForAdmin
-);
-route.put(
-  "/update-maintenance/:id",
-  auth, 
-  gardenController.editMaintainanceForAdmin
-);
-// END Routes for Admin Only.
-
+// route.post("/create", quoteController.createOneQuote);
+route.get("/all", quoteController.getAllQuote);
+route.post("/create",upload.single("image"),quoteController.createOneQuote
+  );
 module.exports = route;
